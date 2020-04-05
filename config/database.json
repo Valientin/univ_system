@@ -1,0 +1,18 @@
+{
+    "development": {
+        "username": "university",
+        "password": "university",
+        "database": "university_system_dev",
+        "host": "127.0.0.1",
+        "dialect": "postgres",
+        "logging": false
+    },
+    "production": {
+        "username": "university",
+        "password": "university",
+        "database": "university_system",
+        "host": "127.0.0.1",
+        "dialect": "postgres",
+        "logging": false
+    }
+}

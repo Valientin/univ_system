@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e
+set -o pipefail
+set -x
+
+function user_exists () {
+  psql -c "SELECT usename FROM pg_catalog.pg_user WHERE usename = 'university'" -d postgres |
+  grep "(1 row)"
+}
+
+function create_user () {
+  psql -c "CREATE USER university PASSWORD 'university' LOGIN" -d postgres
+}
+
+user_exists || create_user
+
+psql -c "DROP DATABASE IF EXISTS $1" -d postgres
+psql -c "CREATE DATABASE $1" -d postgres
+psql -c "CREATE EXTENSION postgis;" -d $1

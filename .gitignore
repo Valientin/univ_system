@@ -1,0 +1,29 @@
+# Modules
+node_modules
+package-lock.json
+yarn.lock
+
+# OSX
+.DS_Store
+
+#VScode
+.vscode/
+
+# Temp
+/tmp/*
+!/tmp/.keep
+
+# Unknown
+*.orig
+.nyc_output
+/report.*
+/npm-debug.log
+
+# Dist
+dist
+
+# Logs
+logs
+
+# Idea
+.idea
