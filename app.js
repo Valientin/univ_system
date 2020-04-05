@@ -23,9 +23,9 @@ if (!module.parent) {
 
     (async() => {
         await model.sequelize.authenticate();
-        await model.sequelize.sync({ force: true });
+        // await model.sequelize.sync({ force: true });
 
-        const port = process.env.PORT || 3001;
+        const port = process.env.PORT || 3000;
 
         app.listen(port);
     })(function(error) {
