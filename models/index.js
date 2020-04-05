@@ -5,7 +5,7 @@ const basename = path.basename(__filename);
 const config = require(__dirname + '/../config/database.json');
 const db = {};
 
-const sequelize = new Sequelize(proccess.env.DATABASE_URL || config.url, {
+const sequelize = new Sequelize(process.env.DATABASE_URL || config.url, {
     dialect: 'postgres',
     dialectOptions: {
         ssl: true
