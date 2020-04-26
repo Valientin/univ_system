@@ -9,6 +9,10 @@ module.exports = function(sequelize, DataTypes) {
             foreignKey: 'userId',
             allowNull: false
         });
+
+        Teacher.belongsTo(models.Cathedra, {
+            as: 'cathedra', foreignKey: 'cathedraId'
+        });
     };
 
     return Teacher;

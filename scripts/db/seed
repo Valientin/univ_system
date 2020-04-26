@@ -1,0 +1,36 @@
+#!/usr/bin/env node
+
+const model = require('../../models');
+
+async function createAdmins() {
+    const allAdmins = await model.User.count({ where: { roleName: 'admin' } });
+
+    if (allAdmins == 0) {
+        const user = await model.User.create({
+            firstName: 'test',
+            lastName: 'test',
+            loginName: 'admin',
+            roleName: 'admin',
+            email: 'test@mail.ru',
+            middleName: 'test',
+            birthday: new Date(),
+            status: 'offline'
+        });
+
+        await user.setPassword('poosib');
+    }
+}
+
+(async() => {
+    await model.sequelize.authenticate();
+    await model.sequelize.sync({ force: false });
+
+    await createAdmins();
+
+    process.exit(0);
+})(function(e) {
+    if (e) {
+        logger.error(e);
+        throw e;
+    }
+});

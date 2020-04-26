@@ -5,12 +5,26 @@ const basename = path.basename(__filename);
 const config = require(__dirname + '/../config/database.json');
 const db = {};
 
-const sequelize = new Sequelize(process.env.DATABASE_URL || config.url, {
-    dialect: 'postgres',
-    dialectOptions: {
-        ssl: true
+function connect(conf) {
+    if (conf.url) {
+        return new Sequelize(process.env.DATABASE_URL || conf.url, {
+            dialect: 'postgres',
+            logging: false,
+            dialectOptions: {
+                ssl: true
+            }
+        });
+    } else {
+        return new Sequelize(conf.database, conf.username, conf.password, {
+            dialect: 'postgres',
+            logging: false,
+            host: conf.host,
+            port: process.env.POSTGRESQL_PORT || conf.port || 5432
+        });
     }
-});
+};
+
+const sequelize = connect(config[process.env.NODE_ENV || 'development']);
 
 fs
     .readdirSync(__dirname)

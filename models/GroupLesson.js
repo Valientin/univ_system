@@ -1,21 +1,5 @@
 module.exports = function(sequelize, DataTypes) {
     const GroupLesson = sequelize.define('GroupLesson', {
-        numberOfLesson: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            validate: {
-                min: 1,
-                max: 10
-            }
-        },
-        dayOfWeek: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            validate: {
-                min: 1,
-                max: 7
-            }
-        },
         toDate: {
             type: DataTypes.DATE,
             allowNull: false

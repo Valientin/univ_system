@@ -1,3 +1,5 @@
+const crypto = require('crypto-extra');
+
 module.exports = function(sequelize, DataTypes) {
     const Session = sequelize.define('Session', {
         token: {
@@ -7,10 +9,12 @@ module.exports = function(sequelize, DataTypes) {
         expiredDate: {
             type: DataTypes.DATE,
             allowNull: false
-        },
-        type: {
-            type: DataTypes.ENUM,
-            values: ['student', 'admin', 'teacher']
+        }
+    }, {
+        hooks: {
+            beforeValidate: function(session) {
+                session.token = session.token || crypto.randomString(32);
+            }
         }
     });
 

@@ -35,15 +35,29 @@ module.exports = function(sequelize, DataTypes) {
         },
         email: {
             type: DataTypes.STRING,
-            allowNull: true,
+            allowNull: false,
             validate: {
                 isEmail: true
             }
         },
+        roleName: {
+            type: DataTypes.ENUM,
+            allowNull: false,
+            values: ['student', 'teacher', 'admin']
+        },
         passwordSalt: DataTypes.STRING,
         passwordHash: DataTypes.STRING,
         photoPath: DataTypes.STRING,
-        birthday: DataTypes.DATE
+        birthday: {
+            type: DataTypes.DATE,
+            allowNull: false
+        },
+        status: {
+            type: DataTypes.ENUM,
+            allowNull: false,
+            values: ['online', 'offline']
+        },
+        lastActiveTime: DataTypes.DATE
     }, {
         indexes: [{
             fields: ['email'],
@@ -55,7 +69,13 @@ module.exports = function(sequelize, DataTypes) {
     });
 
     User.associate = function(models) {
+        User.hasOne(models.Student, {
+            as: 'student', foreignKey: 'userId'
+        });
 
+        User.hasOne(models.Teacher, {
+            as: 'teacher', foreignKey: 'userId'
+        });
     };
 
     User.prototype.hasPassword = async function(password) {
@@ -72,7 +92,7 @@ module.exports = function(sequelize, DataTypes) {
         });
     };
 
-    User.prototype.setPassword = async function(password) {
+    User.prototype.setPassword = async function(password, transaction = null) {
         const user = this;
 
         user.passwordSalt = crypto.randomBytes(64).toString('base64');
@@ -86,7 +106,7 @@ module.exports = function(sequelize, DataTypes) {
             });
         });
 
-        await user.save();
+        await user.save({ transaction });
     };
 
     return User;

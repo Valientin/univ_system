@@ -1,3 +1,11 @@
 {
-    "url": "postgres://psvhacqnegzlxs:658318d033c274a7de1e449751c2fa3b74f9f221bb224f29e0370294c574099d@ec2-54-75-231-215.eu-west-1.compute.amazonaws.com:5432/dev3avudoneoht"
+    "development": {
+        "username": "univsystem",
+        "password": "univsystem",
+        "database": "univsystem",
+        "host": "127.0.0.1"
+    },
+    "production": {
+        "url": "postgres://psvhacqnegzlxs:658318d033c274a7de1e449751c2fa3b74f9f221bb224f29e0370294c574099d@ec2-54-75-231-215.eu-west-1.compute.amazonaws.com:5432/dev3avudoneoht"
+    }
 }
