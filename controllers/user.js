@@ -98,7 +98,7 @@ const update = async(ctx, next) => {
         email, birthday, groupId, cathedraId, learnFormId, password
     } = ctx.request.body;
 
-    if (!ctx.updatedUser) {
+    if (!ctx.user) {
         const t = await model.sequelize.transaction();
         const newImage = await helpers.sharpImage(ctx);
 
@@ -143,18 +143,18 @@ const update = async(ctx, next) => {
             ctx.throw(400);
         }
 
-        const { roleName } = ctx.updatedUser;
+        const { roleName } = ctx.user;
 
         if ((roleName == 'teacher' && !cathedraId) || (roleName == 'student' && (!learnFormId || !groupId))) {
             ctx.throw(400);
         }
 
-        await checkExistUserByEmailOrLogin(ctx, email, loginName, ctx.updatedUser.id);
+        await checkExistUserByEmailOrLogin(ctx, email, loginName, ctx.user.id);
 
         const t = await model.sequelize.transaction();
 
         try {
-            await ctx.updatedUser.update({
+            await ctx.user.update({
                 firstName,
                 lastName,
                 middleName,
@@ -164,11 +164,11 @@ const update = async(ctx, next) => {
             }, { transaction: t });
 
             if (roleName == 'teacher') {
-                ctx.teacher = await ctx.updatedUser.teacher.update({
+                ctx.teacher = await ctx.user.teacher.update({
                     cathedraId
                 }, { transaction: t });
             } else if (roleName == 'student') {
-                ctx.student = await ctx.updatedUser.student.update({
+                ctx.student = await ctx.user.student.update({
                     groupId
                 }, { transaction: t });
             }
@@ -182,7 +182,7 @@ const update = async(ctx, next) => {
             ctx.throw(409);
         }
 
-        ctx.body = await ctx.updatedUser.reload();
+        ctx.body = await ctx.user.reload();
     }
 
     await next();
@@ -195,7 +195,7 @@ const retrieve = async(ctx, next) => {
         ctx.throw(404);
     }
 
-    ctx.updatedUser = await model.User.findOne({
+    ctx.user = await model.User.findOne({
         where: {
             id: userId
         },
@@ -216,7 +216,7 @@ const retrieve = async(ctx, next) => {
         }]
     });
 
-    if (!ctx.updatedUser) {
+    if (!ctx.user) {
         ctx.throw(404);
     }
 
@@ -294,11 +294,20 @@ async function checkExistUserByEmailOrLogin(ctx, email, loginName, id = null) {
     }
 }
 
+const remove = async(ctx, next) => {
+    await ctx.user.destroy();
+
+    ctx.status = 204;
+
+    await next();
+};
+
 module.exports = {
     create,
     login,
     logout,
     getData,
     retrieve,
-    update
+    update,
+    remove
 };

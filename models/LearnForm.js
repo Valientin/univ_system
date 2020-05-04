@@ -7,6 +7,10 @@ module.exports = function(sequelize, DataTypes) {
         needPay: {
             type: DataTypes.BOOLEAN,
             allowNull: false
+        },
+        price: {
+            type: DataTypes.INTEGER,
+            allowNull: false
         }
     });
 

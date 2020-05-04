@@ -65,7 +65,8 @@ module.exports = function(sequelize, DataTypes) {
         }, {
             fields: ['loginName'],
             unique: true
-        }]
+        }],
+        paranoid: true
     });
 
     User.associate = function(models) {

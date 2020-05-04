@@ -33,8 +33,10 @@ router.get('/', async(ctx, next) => {
 });
 
 const userRoutes = require('./routes/user');
+const facultyRoutes = require('./routes/faculty');
 
 app.use(userRoutes);
+app.use(facultyRoutes);
 
 if (!module.parent) {
     const model = require('./models');

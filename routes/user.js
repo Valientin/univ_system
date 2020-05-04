@@ -16,5 +16,6 @@ router.put('/user/data', authorise, upload.single('image'), User.update);
 router.put('/user/:userId/data', authorise, requireRole(['admin']), User.retrieve, User.update);
 
 router.delete('/user/session', authorise, User.logout);
+router.delete('/user/:userId', authorise, User.retrieve, User.remove);
 
 module.exports = router.routes();
