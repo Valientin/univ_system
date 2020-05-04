@@ -11,6 +11,7 @@ module.exports = function(sequelize, DataTypes) {
         });
 
         Teacher.belongsTo(models.Cathedra, {
+            allowNull: false,
             as: 'cathedra', foreignKey: 'cathedraId'
         });
     };

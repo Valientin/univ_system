@@ -11,10 +11,12 @@ module.exports = function(sequelize, DataTypes) {
         });
 
         Student.belongsTo(models.Group, {
+            allowNull: false,
             as: 'group', foreignKey: 'groupId'
         });
 
         Student.belongsTo(models.LearnForm, {
+            allowNull: false,
             as: 'learnForm', foreignKey: 'learnFormId'
         });
     };

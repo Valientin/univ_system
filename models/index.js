@@ -9,7 +9,7 @@ function connect(conf) {
     if (conf.url) {
         return new Sequelize(process.env.DATABASE_URL || conf.url, {
             dialect: 'postgres',
-            logging: false,
+            logging: true,
             dialectOptions: {
                 ssl: true
             }

@@ -47,7 +47,7 @@ module.exports = function(sequelize, DataTypes) {
         },
         passwordSalt: DataTypes.STRING,
         passwordHash: DataTypes.STRING,
-        photoPath: DataTypes.STRING,
+        photo: DataTypes.JSONB,
         birthday: {
             type: DataTypes.DATE,
             allowNull: false
