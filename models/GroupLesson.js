@@ -9,14 +9,18 @@ module.exports = function(sequelize, DataTypes) {
     GroupLesson.associate = function(models) {
         GroupLesson.belongsTo(models.Group, {
             as: 'group',
-            foreignKey: 'groupId',
-            allowNull: false
+            foreignKey: {
+                name: 'groupId',
+                allowNull: false
+            }
         });
 
         GroupLesson.belongsTo(models.Lesson, {
             as: 'lesson',
-            foreignKey: 'lessonId',
-            allowNull: false
+            foreignKey: {
+                name: 'lessonId',
+                allowNull: false
+            }
         });
     };
 

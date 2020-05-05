@@ -6,13 +6,17 @@ module.exports = function(sequelize, DataTypes) {
     Teacher.associate = function(models) {
         Teacher.belongsTo(models.User, {
             as: 'user',
-            foreignKey: 'userId',
-            allowNull: false
+            foreignKey: {
+                name: 'userId',
+                allowNull: false
+            }
         });
 
         Teacher.belongsTo(models.Cathedra, {
-            allowNull: false,
-            as: 'cathedra', foreignKey: 'cathedraId'
+            as: 'cathedra', foreignKey: {
+                name: 'cathedraId',
+                allowNull: false
+            }
         });
     };
 

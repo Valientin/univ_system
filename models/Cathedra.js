@@ -2,7 +2,8 @@ module.exports = function(sequelize, DataTypes) {
     const Cathedra = sequelize.define('Cathedra', {
         name: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            unique: true
         },
         foundedDate: DataTypes.DATE,
         siteUrl: DataTypes.STRING,
@@ -11,7 +12,10 @@ module.exports = function(sequelize, DataTypes) {
 
     Cathedra.associate = function(models) {
         Cathedra.belongsTo(models.Faculty, {
-            as: 'faculty', foreignKey: 'facultyId'
+            as: 'faculty', foreignKey: {
+                name: 'facultyId',
+                allowNull: false
+            }
         });
     };
 

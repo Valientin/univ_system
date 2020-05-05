@@ -20,7 +20,10 @@ module.exports = function(sequelize, DataTypes) {
 
     Session.associate = function(models) {
         Session.belongsTo(models.User, {
-            as: 'user', foreignKey: 'userId'
+            as: 'user', foreignKey: {
+                name: 'userId',
+                allowNull: false
+            }
         });
     };
 

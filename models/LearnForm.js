@@ -2,7 +2,8 @@ module.exports = function(sequelize, DataTypes) {
     const LearnForm = sequelize.define('LearnForm', {
         name: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
+            unique: true
         },
         needPay: {
             type: DataTypes.BOOLEAN,

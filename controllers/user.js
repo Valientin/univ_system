@@ -13,7 +13,7 @@ const getData = async(ctx, next) => {
                 include: {
                     model: model.Cathedra,
                     as: 'cathedra',
-                    inlcude: {
+                    include: {
                         model: model.Faculty,
                         as: 'faculty'
                     }
@@ -25,12 +25,13 @@ const getData = async(ctx, next) => {
             include: {
                 model: model.Cathedra,
                 as: 'cathedra',
-                inlcude: {
+                include: {
                     model: model.Faculty,
                     as: 'faculty'
                 }
             }
-        }]
+        }],
+        logging: true
     });
 };
 
@@ -72,11 +73,14 @@ const create = async(ctx, next) => {
 
         if (roleName == 'teacher') {
             ctx.teacher = await model.Teacher.create({
-                cathedraId
+                cathedraId,
+                userId: ctx.user.id
             }, { transaction: t });
         } else if (roleName == 'student') {
             ctx.student = await model.Student.create({
-                groupId
+                groupId,
+                learnFormId,
+                userId: ctx.user.id
             }, { transaction: t });
         }
 
@@ -239,11 +243,11 @@ const login = async(ctx, next) => {
     });
 
     if (!user) {
-        ctx.throw(404, 'User not found');
+        ctx.throw(404, 'userNotFound');
     }
 
     if (!(await user.hasPassword(password))) {
-        ctx.throw(400, 'Invalid password');
+        ctx.throw(400, 'invalidPassword');
     }
 
     await model.Session.destroy({

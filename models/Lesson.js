@@ -8,7 +8,10 @@ module.exports = function(sequelize, DataTypes) {
 
     Lesson.associate = function(models) {
         Lesson.belongsTo(models.Teacher, {
-            as: 'teacher', foreignKey: 'teacherId'
+            as: 'teacher', foreignKey: {
+                name: 'teacherId',
+                allowNull: false
+            }
         });
     };
 

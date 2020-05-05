@@ -34,9 +34,15 @@ router.get('/', async(ctx, next) => {
 
 const userRoutes = require('./routes/user');
 const facultyRoutes = require('./routes/faculty');
+const cathedraRoutes = require('./routes/cathedra');
+const groupRoutes = require('./routes/group');
+const learnFormRoutes = require('./routes/learnForm');
 
 app.use(userRoutes);
 app.use(facultyRoutes);
+app.use(cathedraRoutes);
+app.use(groupRoutes);
+app.use(learnFormRoutes);
 
 if (!module.parent) {
     const model = require('./models');

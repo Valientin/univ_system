@@ -17,7 +17,10 @@ module.exports = function(sequelize, DataTypes) {
 
     StudentPayment.associate = function(models) {
         StudentPayment.belongsTo(models.Student, {
-            as: 'student', foreignKey: 'studentId'
+            as: 'student', foreignKey: {
+                name: 'studentId',
+                allowNull: false
+            }
         });
     };
 

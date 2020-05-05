@@ -2,11 +2,8 @@ module.exports = function(sequelize, DataTypes) {
     const Group = sequelize.define('Group', {
         name: {
             type: DataTypes.STRING,
-            allowNull: false
-        },
-        startYear: {
-            type: DataTypes.DATE,
-            allowNull: false
+            allowNull: false,
+            unique: true
         },
         numberOfSemesters: {
             type: DataTypes.INTEGER,
@@ -16,7 +13,10 @@ module.exports = function(sequelize, DataTypes) {
 
     Group.associate = function(models) {
         Group.belongsTo(models.Cathedra, {
-            as: 'cathedra', foreignKey: 'cathedraId'
+            as: 'cathedra', foreignKey: {
+                name: 'cathedraId',
+                allowNull: false
+            }
         });
     };
 

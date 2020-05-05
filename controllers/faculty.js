@@ -1,5 +1,4 @@
 const model = require('../models');
-const logger = require('../lib/logger');
 
 const list = async(ctx, next) => {
     const result = await model.Faculty.findAndCountAll({

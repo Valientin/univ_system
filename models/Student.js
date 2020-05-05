@@ -6,18 +6,24 @@ module.exports = function(sequelize, DataTypes) {
     Student.associate = function(models) {
         Student.belongsTo(models.User, {
             as: 'user',
-            foreignKey: 'userId',
-            allowNull: false
+            foreignKey: {
+                name: 'userId',
+                allowNull: false
+            }
         });
 
         Student.belongsTo(models.Group, {
-            allowNull: false,
-            as: 'group', foreignKey: 'groupId'
+            as: 'group', foreignKey: {
+                name: 'groupId',
+                allowNull: false
+            }
         });
 
         Student.belongsTo(models.LearnForm, {
-            allowNull: false,
-            as: 'learnForm', foreignKey: 'learnFormId'
+            as: 'learnForm', foreignKey: {
+                name: 'learnFormId',
+                allowNull: false
+            }
         });
     };
 
