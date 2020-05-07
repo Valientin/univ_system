@@ -157,8 +157,57 @@ const callback = async(ctx) => {
     ctx.status = 200;
 };
 
+const payTuition = async(ctx, next) => {
+    const orderId = Math.floor(Math.random() * (Math.pow(10, 14) - Math.pow(10, 13))) + Math.pow(10, 13);
+    const { amount } = ctx.request.body;
+    const { id: studentId, balance } = ctx.curUser.student;
+
+    if (!amount || isNaN(parseInt(amount))) {
+        ctx.throw(400, 'invalidAmount');
+    }
+
+    if (parseInt(amount) && parseInt(amount) < 10) {
+        ctx.throw(409, 'lessThanMinimum');
+    }
+
+    if (parseInt(balance) < parseInt(amount)) {
+        ctx.throw(409, 'insufficientFunds');
+    }
+
+    const t = await model.sequelize.transaction();
+
+    try {
+        const payment = await model.Payment.create({
+            studentId,
+            orderId,
+            amount: parseFloat(amount),
+            type: 'tuitionFee',
+            status: 'success'
+        }, { transaction: t });
+
+        await ctx.curUser.student.update({
+            balance: parseInt(balance) - parseInt(amount)
+        }, { transaction: t });
+
+        await model.BalanceHistory.create({
+            studentId,
+            paymentId: payment.id,
+            change: -parseInt(amount),
+            balance: ctx.curUser.student.balance
+        }, { transaction: t });
+
+        await t.commit();
+    } catch (err) {
+        await t.rollback();
+
+        ctx.throw(409);
+    }
+
+    ctx.status = 201;
+};
+
 const history = async(ctx, next) => {
-    const { studentId, status } = ctx.query;
+    const { studentId, status, type } = ctx.query;
     const where = {};
 
     if (studentId) {
@@ -166,6 +215,10 @@ const history = async(ctx, next) => {
     }
 
     if (status) {
+        Object.assign(where, { status });
+    }
+
+    if (type) {
         Object.assign(where, { status });
     }
 
@@ -233,5 +286,6 @@ module.exports = {
     rechargeBalance,
     callback,
     history,
-    logs
+    logs,
+    payTuition
 };

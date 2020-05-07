@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
         type: {
             allowNull: false,
             type: DataTypes.ENUM,
-            values: ['rechargeBalance']
+            values: ['rechargeBalance', 'tuitionFee']
         }
     }, {
         indexes: [{

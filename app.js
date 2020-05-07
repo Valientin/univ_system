@@ -38,6 +38,7 @@ const cathedraRoutes = require('./routes/cathedra');
 const groupRoutes = require('./routes/group');
 const learnFormRoutes = require('./routes/learnForm');
 const paymentRoutes = require('./routes/payment');
+const balanceHistoryRoutes = require('./routes/balance-history');
 
 app.use(userRoutes);
 app.use(facultyRoutes);
@@ -45,6 +46,7 @@ app.use(cathedraRoutes);
 app.use(groupRoutes);
 app.use(learnFormRoutes);
 app.use(paymentRoutes);
+app.use(balanceHistoryRoutes);
 
 if (!module.parent) {
     const model = require('./models');

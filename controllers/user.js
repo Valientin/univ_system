@@ -115,7 +115,7 @@ const list = async(ctx, next) => {
 };
 
 const getData = async(ctx, next) => {
-    ctx.body = await ctx.curUser.reload({
+    const user = await ctx.curUser.reload({
         include: [{
             model: model.Student,
             as: 'student',
@@ -147,6 +147,37 @@ const getData = async(ctx, next) => {
             }
         }]
     });
+
+    if (user.roleName == 'student') {
+        let blocked = false;
+        let needPaySum = 0;
+
+        if (user.student.learnForm.needPay) {
+            const payment = await model.Payment.findAll({
+                attributes: [
+                    [model.Sequelize.literal(`SUM("amount")`), 'sum']
+                ],
+                where: {
+                    studentId: user.student.id,
+                    type: 'tuitionFee',
+                    status: 'success'
+                }
+            });
+
+            const allSum = payment && payment[0] && parseInt(payment[0].getDataValue('sum')) || 0;
+
+            if (allSum < parseInt(user.student.learnForm.price)) {
+                blocked = true;
+                needPaySum = parseInt(user.student.learnForm.price) - allSum;
+            }
+        }
+
+        Object.assign(user.student.dataValues, {
+            blocked, needPaySum
+        });
+    }
+
+    ctx.body = user;
 };
 
 const create = async(ctx, next) => {

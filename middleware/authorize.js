@@ -50,3 +50,30 @@ exports.requireRole = function requireRole(roles) {
         await next();
     };
 };
+
+exports.requireNotBlocked = async function(ctx, next) {
+    if (ctx.curUser.roleName != 'student') {
+        return await next();
+    }
+
+    if (ctx.curUser.student.learnForm.needPay) {
+        const payment = await model.Payment.findAll({
+            attributes: [
+                [model.Sequelize.literal(`SUM("amount")`), 'sum']
+            ],
+            where: {
+                studentId: user.student.id,
+                type: 'tuitionFee',
+                status: 'success'
+            }
+        });
+
+        const allSum = payment && payment[0] && parseInt(payment[0].getDataValue('sum')) || 0;
+
+        if (allSum < parseInt(user.student.learnForm.price)) {
+            ctx.throw(403, 'needToPayTuition');
+        }
+    }
+
+    await next();
+};

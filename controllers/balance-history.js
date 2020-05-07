@@ -1,6 +1,6 @@
 const model = require('../models');
 
-const list = async(ctx) => {
+const list = async(ctx, next) => {
     const { studentId } = ctx.query;
     const where = {};
 
@@ -10,7 +10,7 @@ const list = async(ctx) => {
         });
     }
 
-    const result = await model.Cathedra.findAndCountAll({
+    const result = await model.BalanceHistory.findAndCountAll({
         where,
         include: {
             model: model.Payment,

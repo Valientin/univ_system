@@ -9,6 +9,7 @@ router.get('/payment/history', authorise, requireRole(['admin']), pagination, Pa
 router.get('/payment/:paymentId/logs', authorise, requireRole(['admin']), Payment.logs);
 
 router.post('/payment/recharge-balance', authorise, requireRole(['student']), Payment.rechargeBalance);
+router.post('/payment/pay-tuition', authorise, requireRole(['student']), Payment.payTuition);
 
 router.get(`/liqpay/callback`, Payment.callback);
 router.post(`/liqpay/callback`, Payment.callback);
