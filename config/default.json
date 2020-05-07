@@ -1,3 +1,8 @@
 {
-    "test": "test"
+    "LiqPay": {
+        "publicKey": "i20098870661",
+        "privateKey": "1G4Rd70VY8WJSh8CK7s602R1diPyKMJCc5IcChkX",
+        "liqpayHost": "https://www.liqpay.ua/api/",
+        "sandbox": true
+    }
 }

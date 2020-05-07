@@ -12,6 +12,7 @@
   "dependencies": {
     "@koa/cors": "^3.0.0",
     "@koa/multer": "^2.0.2",
+    "axios": "^0.19.2",
     "babel-eslint": "^10.0.3",
     "config": "^3.2.5",
     "crypto": "^1.0.1",
@@ -29,6 +30,8 @@
     "nodemon": "^2.0.2",
     "pg": "^7.18.1",
     "pg-hstore": "^2.3.3",
+    "querystring": "^0.2.0",
+    "request": "^2.88.2",
     "sequelize": "^5.21.3",
     "sequelize-cli": "^5.5.1",
     "sharp": "^0.25.2",

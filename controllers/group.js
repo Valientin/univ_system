@@ -1,7 +1,49 @@
 const model = require('../models');
 
 const list = async(ctx, next) => {
+    const { name, cathedraId, numberOfSemesters, facultyId } = ctx.query;
+    const where = {};
+    const facultyWhere = {};
+
+    if (name) {
+        Object.assign(where, {
+            name: {
+                [model.Sequelize.Op.iLike]: `%${name}%`
+            }
+        });
+    }
+
+    if (cathedraId) {
+        Object.assign(where, { cathedraId });
+    }
+
+    if (numberOfSemesters) {
+        Object.assign(where, { numberOfSemesters });
+    }
+
+    if (facultyId) {
+        Object.assign(facultyWhere, { id: facultyId });
+    }
+
     const result = await model.Group.findAndCountAll({
+        attributes: [
+            'name', 'numberOfSemesters', 'cathedraId',
+            [model.Sequelize.literal(`(SELECT COUNT(*) FROM "Students" WHERE "groupId" = "Group"."id")`), 'students']
+        ],
+        where,
+        include: {
+            model: model.Cathedra,
+            attributes: ['name', 'facultyId'],
+            as: 'cathedra',
+            required: true,
+            include: {
+                model: model.Faculty,
+                where: facultyWhere,
+                required: true,
+                attributes: ['name'],
+                as: 'faculty'
+            }
+        },
         limit: ctx.limit,
         offset: ctx.offset
     });
@@ -68,7 +110,7 @@ const remove = async(ctx, next) => {
     });
 
     if (studentCount > 0) {
-        ctx.throw(409, 'Has active students');
+        ctx.throw(409, 'hasActiveStudents');
     }
 
     await ctx.group.destroy();
@@ -106,7 +148,7 @@ async function checkExistGroup(ctx, name, id) {
     });
 
     if (alreadyExistGroup) {
-        ctx.throw(409, 'Group with this name already exist');
+        ctx.throw(409, 'groupAlreadyExist');
     }
 }
 

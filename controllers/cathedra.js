@@ -1,7 +1,32 @@
 const model = require('../models');
 
 const list = async(ctx, next) => {
+    const { name, facultyId } = ctx.query;
+    const where = {};
+
+    if (name) {
+        Object.assign(where, {
+            name: {
+                [model.Sequelize.Op.iLike]: `%${name}%`
+            }
+        });
+    }
+
+    if (facultyId) {
+        Object.assign(where, { facultyId });
+    }
+
     const result = await model.Cathedra.findAndCountAll({
+        attributes: [
+            'name', 'foundedDate', 'siteUrl', 'addittionalInfo', 'facultyId',
+            [model.Sequelize.literal(`(SELECT COUNT(*) FROM "Groups" WHERE "cathedraId" = "Cathedra"."id")`), 'groups']
+        ],
+        where,
+        include: {
+            model: model.Faculty,
+            attributes: ['name'],
+            as: 'faculty'
+        },
         limit: ctx.limit,
         offset: ctx.offset
     });
@@ -72,7 +97,7 @@ const remove = async(ctx, next) => {
     });
 
     if (groupCount > 0) {
-        ctx.throw(409, 'Has active groups');
+        ctx.throw(409, 'hasActiveGroups');
     }
 
     await ctx.cathedra.destroy();
@@ -110,7 +135,7 @@ async function checkExistCathedra(ctx, name, id) {
     });
 
     if (alreadyExistCathedra) {
-        ctx.throw(409, 'Cathedra with this name already exist');
+        ctx.throw(409, 'cathedraAlreadyExist');
     }
 }
 

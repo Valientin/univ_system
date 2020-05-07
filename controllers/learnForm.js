@@ -1,7 +1,27 @@
 const model = require('../models');
 
 const list = async(ctx, next) => {
+    const { name, needPay } = ctx.query;
+    const where = {};
+
+    if (name) {
+        Object.assign(where, {
+            name: {
+                [model.Sequelize.Op.iLike]: `%${name}%`
+            }
+        });
+    }
+
+    if (needPay) {
+        Object.assign(where, { needPay: needPay == 'true' });
+    }
+
     const result = await model.LearnForm.findAndCountAll({
+        attributes: [
+            'name', 'needPay', 'price',
+            [model.Sequelize.literal(`(SELECT COUNT(*) FROM "Students" WHERE "learnFormId" = "LearnForm"."id")`), 'students']
+        ],
+        where,
         limit: ctx.limit,
         offset: ctx.offset
     });
@@ -68,7 +88,7 @@ const remove = async(ctx, next) => {
     });
 
     if (studentCount > 0) {
-        ctx.throw(409, 'Has active students');
+        ctx.throw(409, 'hasActiveStudents');
     }
 
     await ctx.learnForm.destroy();
@@ -106,7 +126,7 @@ async function checkExistLearnForm(ctx, name, id) {
     });
 
     if (alreadyExistLearnForm) {
-        ctx.throw(409, 'Learn form with this name already exist');
+        ctx.throw(409, 'learnFormAlreadyExist');
     }
 }
 

@@ -7,6 +7,7 @@ const upload = multer();
 const { authorise, requireRole } = require('../middleware/authorize');
 const User = require('../controllers/user');
 
+router.get('/user/list', authorise, requireRole(['admin']), User.list);
 router.get('/user/data', authorise, User.getData);
 
 router.post('/user', authorise, requireRole(['admin']), User.create);

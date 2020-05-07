@@ -37,12 +37,14 @@ const facultyRoutes = require('./routes/faculty');
 const cathedraRoutes = require('./routes/cathedra');
 const groupRoutes = require('./routes/group');
 const learnFormRoutes = require('./routes/learnForm');
+const paymentRoutes = require('./routes/payment');
 
 app.use(userRoutes);
 app.use(facultyRoutes);
 app.use(cathedraRoutes);
 app.use(groupRoutes);
 app.use(learnFormRoutes);
+app.use(paymentRoutes);
 
 if (!module.parent) {
     const model = require('./models');

@@ -2,12 +2,124 @@ const model = require('../models');
 const logger = require('../lib/logger');
 const helpers = require('../lib/helpers');
 
+const list = async(ctx, next) => {
+    const { roleName, groupId, learnFormId, cathedraId, facultyId } = ctx.query;
+    const where = {};
+    const studentWhere = {};
+    const studentGroupWhere = {};
+    const studentCathedraWhere = {};
+    const teacherWhere = {};
+    const teacherCathedraWhere = {};
+
+    ['firstName', 'lastName', 'middleName', 'email', 'loginName'].forEach(it => {
+        if (ctx.query[it]) {
+            Object.assign(where, {
+                [it]: {
+                    [model.Sequelize.Op.iLike]: `%${ctx.query[it]}%`
+                }
+            });
+        }
+    });
+
+    if (roleName) {
+        Object.assign(where, { roleName });
+    }
+
+    if (groupId && roleName == 'student') {
+        Object.assign(studentWhere, { groupId });
+    }
+
+    if (learnFormId && roleName == 'student') {
+        Object.assign(studentWhere, { learnFormId });
+    }
+
+    if (cathedraId && roleName == 'student') {
+        Object.assign(studentGroupWhere, { cathedraId });
+    }
+
+    if (facultyId && roleName == 'student') {
+        Object.assign(studentCathedraWhere, { facultyId });
+    }
+
+    if (cathedraId && roleName == 'teacher') {
+        Object.assign(teacherWhere, { cathedraId });
+    }
+
+    if (facultyId && roleName == 'teacher') {
+        Object.assign(teacherCathedraWhere, { facultyId });
+    }
+
+    const studentRequired = Object.keys(studentWhere).length || Object.keys(studentGroupWhere).length
+        || Object.keys(studentCathedraWhere).length;
+    const teacherRequired = Object.keys(teacherWhere).length || Object.keys(teacherCathedraWhere).length;
+
+    const result = await model.User.findAndCountAll({
+        attributes: [
+            'firstName', 'lastName', 'middleName', 'loginName',
+            'email', 'roleName', 'birthday'
+        ],
+        where,
+        include: [{
+            model: model.Student,
+            as: 'student',
+            where: studentWhere,
+            required: studentRequired,
+            include: [{
+                model: model.Group,
+                as: 'group',
+                where: studentGroupWhere,
+                required: studentRequired,
+                include: {
+                    model: model.Cathedra,
+                    as: 'cathedra',
+                    where: studentCathedraWhere,
+                    required: studentRequired,
+                    include: {
+                        model: model.Faculty,
+                        as: 'faculty',
+                        required: studentRequired
+                    }
+                }
+            }, {
+                model: model.LearnForm,
+                as: 'learnForm',
+                required: studentRequired
+            }]
+        }, {
+            model: model.Teacher,
+            as: 'teacher',
+            required: teacherRequired,
+            where: teacherWhere,
+            include: {
+                model: model.Cathedra,
+                as: 'cathedra',
+                required: teacherRequired,
+                where: teacherCathedraWhere,
+                include: {
+                    model: model.Faculty,
+                    as: 'faculty',
+                    required: teacherRequired
+                }
+            }
+        }],
+        limit: ctx.limit,
+        offset: ctx.offset
+    });
+
+    ctx.body = {
+        users: result.rows
+    };
+    ctx.count = result.count;
+
+    await next();
+};
+
 const getData = async(ctx, next) => {
     ctx.body = await ctx.curUser.reload({
         include: [{
             model: model.Student,
             as: 'student',
-            include: {
+            include: [{
                 model: model.Group,
                 as: 'group',
                 include: {
@@ -18,7 +130,10 @@ const getData = async(ctx, next) => {
                         as: 'faculty'
                     }
                 }
-            }
+            }, {
+                model: model.LearnForm,
+                as: 'learnForm'
+            }]
         }, {
             model: model.Teacher,
             as: 'teacher',
@@ -30,8 +145,7 @@ const getData = async(ctx, next) => {
                     as: 'faculty'
                 }
             }
-        }],
-        logging: true
+        }]
     });
 };
 
@@ -99,7 +213,7 @@ const create = async(ctx, next) => {
 const update = async(ctx, next) => {
     const {
         firstName, lastName, middleName, loginName,
-        email, birthday, groupId, cathedraId, learnFormId, password
+        email, birthday, groupId, cathedraId, learnFormId, password, oldPassword
     } = ctx.request.body;
 
     if (!ctx.user) {
@@ -115,6 +229,10 @@ const update = async(ctx, next) => {
             }
 
             if (password) {
+                if (!(await ctx.curUser.hasPassword(oldPassword || ''))) {
+                    ctx.throw(400, 'invalidPassword');
+                }
+
                 if (password.length < 5) {
                     ctx.throw(400, 'Less then minimum length of password');
                 }
@@ -284,7 +402,7 @@ async function checkExistUserByEmailOrLogin(ctx, email, loginName, id = null) {
     });
 
     if (existUserByLogin) {
-        ctx.throw(409, 'Already exist user with this login');
+        ctx.throw(409, 'existUserWithLogin');
     }
 
     const existUserByEmail = await model.User.findOne({
@@ -294,7 +412,7 @@ async function checkExistUserByEmailOrLogin(ctx, email, loginName, id = null) {
     });
 
     if (existUserByEmail) {
-        ctx.throw(409, 'Already exist user with this email');
+        ctx.throw(409, 'existUserWithEmail');
     }
 }
 
@@ -313,5 +431,6 @@ module.exports = {
     getData,
     retrieve,
     update,
-    remove
+    remove,
+    list
 };
