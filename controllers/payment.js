@@ -71,11 +71,6 @@ const callback = async(ctx) => {
 
     logger.debug(`Callback body: '${JSON.stringify(ctx.request.body)}'`);
 
-    // const paymentLog = await model.PaymentLog.create({
-    //     type: 'callback',
-    //     request: ctx.request.body
-    // });
-
     const sign = liqpay.str_to_sign(privateKey + data + privateKey);
 
     if (sign !== signature) {
@@ -85,10 +80,6 @@ const callback = async(ctx) => {
     }
 
     const params = JSON.parse(Buffer.from(data, 'base64').toString());
-
-    // await paymentLog.update({
-    //     response: params
-    // });
 
     if (params.public_key !== publicKey) {
         logger.error('Incorrect public key');
@@ -116,11 +107,6 @@ const callback = async(ctx) => {
     const amount = parseFloat(payment.amount);
     const balance = parseFloat(student.balance) || 0;
 
-    // await paymentLog.update({
-    //     paymentId: payment.id,
-    //     orderId: payment.orderId
-    // });
-
     if (params.action !== 'pay' || parseFloat(params.amount) !== parseFloat(amount) || params.currency !== payment.currency) {
         logger.error('Incorrect parameters');
 
@@ -131,25 +117,43 @@ const callback = async(ctx) => {
         return ctx.body = null;
     }
 
-    if (sandbox && params.status === 'sandbox') {
-        await payment.update({
-            status: 'sandbox'
-        });
+    const t = await model.sequelize.transaction();
 
-        if (payment.type === 'rechargeBalance') {
-            await student.update({
-                balance: (balance + amount) || 10
-            });
+    try {
+        if (sandbox && params.status === 'sandbox') {
+            await payment.update({
+                status: 'sandbox'
+            }, { transaction: t });
 
-            await model.BalanceHistory.create({
-                studentId: student.id,
-                paymentId: payment.id,
-                change: amount  || 10,
-                balance: student.balance  || 10
-            });
+            if (payment.type === 'rechargeBalance') {
+                await student.update({
+                    balance: balance + amount
+                }, { transaction: t });
 
-            logger.debug('Recharge balance');
+                await model.BalanceHistory.create({
+                    studentId: student.id,
+                    paymentId: payment.id,
+                    change: amount,
+                    balance: student.balance
+                }, { transaction: t });
+
+                logger.debug('Recharge balance');
+            }
         }
+
+        await model.PaymentLog.create({
+            type: 'callback',
+            request: ctx.request.body,
+            response: params,
+            paymentId: payment.id,
+            orderId: payment.orderId
+        }, { transaction: t });
+
+        await t.commit();
+    } catch (err) {
+        await t.rollback();
+
+        ctx.throw(409);
     }
 
     ctx.status = 200;
