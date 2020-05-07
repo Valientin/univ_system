@@ -18,7 +18,7 @@ const list = async(ctx, next) => {
 
     const result = await model.LearnForm.findAndCountAll({
         attributes: [
-            'name', 'needPay', 'price',
+            'id', 'name', 'needPay', 'price',
             [model.Sequelize.literal(`(SELECT COUNT(*) FROM "Students" WHERE "learnFormId" = "LearnForm"."id")`), 'students']
         ],
         where,

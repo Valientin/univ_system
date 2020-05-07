@@ -55,7 +55,7 @@ const list = async(ctx, next) => {
 
     const result = await model.User.findAndCountAll({
         attributes: [
-            'firstName', 'lastName', 'middleName', 'loginName',
+            'id', 'firstName', 'lastName', 'middleName', 'loginName',
             'email', 'roleName', 'birthday'
         ],
         where,

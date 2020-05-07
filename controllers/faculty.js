@@ -14,7 +14,7 @@ const list = async(ctx, next) => {
 
     const result = await model.Faculty.findAndCountAll({
         attributes: [
-            'name', 'foundedDate', 'siteUrl', 'addittionalInfo',
+            'id', 'name', 'foundedDate', 'siteUrl', 'addittionalInfo',
             [model.Sequelize.literal(`(SELECT COUNT(*) FROM "Cathedras" WHERE "facultyId" = "Faculty"."id")`), 'cathedras']
         ],
         where,
