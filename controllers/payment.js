@@ -71,10 +71,10 @@ const callback = async(ctx) => {
 
     logger.debug(`Callback body: '${JSON.stringify(ctx.request.body)}'`);
 
-    const paymentLog = await model.PaymentLog.create({
-        type: 'callback',
-        request: ctx.request.body
-    });
+    // const paymentLog = await model.PaymentLog.create({
+    //     type: 'callback',
+    //     request: ctx.request.body
+    // });
 
     const sign = liqpay.str_to_sign(privateKey + data + privateKey);
 
@@ -86,9 +86,9 @@ const callback = async(ctx) => {
 
     const params = JSON.parse(Buffer.from(data, 'base64').toString());
 
-    await paymentLog.update({
-        response: params
-    });
+    // await paymentLog.update({
+    //     response: params
+    // });
 
     if (params.public_key !== publicKey) {
         logger.error('Incorrect public key');
@@ -116,10 +116,10 @@ const callback = async(ctx) => {
     const amount = parseFloat(payment.amount);
     const balance = parseFloat(student.balance);
 
-    await paymentLog.update({
-        paymentId: payment.id,
-        orderId: payment.orderId
-    });
+    // await paymentLog.update({
+    //     paymentId: payment.id,
+    //     orderId: payment.orderId
+    // });
 
     if (params.action !== 'pay' || parseFloat(params.amount) !== parseFloat(amount) || params.currency !== payment.currency) {
         logger.error('Incorrect parameters');
