@@ -18,7 +18,7 @@ const list = async(ctx, next) => {
 
     const result = await model.Cathedra.findAndCountAll({
         attributes: [
-            'id', 'name', 'foundedDate', 'siteUrl', 'addittionalInfo', 'facultyId',
+            'id', 'name', 'foundedDate', 'siteUrl', 'addittionalInfo', 'facultyId', 'createdAt', 'updatedAt',
             [model.Sequelize.literal(`(SELECT COUNT(*) FROM "Groups" WHERE "cathedraId" = "Cathedra"."id")`), 'groups']
         ],
         where,
