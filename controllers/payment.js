@@ -114,7 +114,7 @@ const callback = async(ctx) => {
     const student = payment.student;
 
     const amount = parseFloat(payment.amount);
-    const balance = parseFloat(student.balance);
+    const balance = parseFloat(student.balance) || 0;
 
     // await paymentLog.update({
     //     paymentId: payment.id,
@@ -138,14 +138,14 @@ const callback = async(ctx) => {
 
         if (payment.type === 'rechargeBalance') {
             await student.update({
-                balance: balance + amount
+                balance: (balance + amount) || 10
             });
 
             await model.BalanceHistory.create({
                 studentId: student.id,
                 paymentId: payment.id,
-                change: amount,
-                balance: student.balance
+                change: amount  || 10,
+                balance: student.balance  || 10
             });
 
             logger.debug('Recharge balance');
