@@ -23,8 +23,9 @@ async function createAdmins() {
 
 async function createMainData() {
     const allFaculties = await model.Faculty.count({ where: {} });
+    const allLearnForms = await model.LearnForm.count({ where: {} });
 
-    if (allFaculties == 0) {
+    if (allFaculties == 0 && allLearnForms == 0) {
         const faculty = await model.Faculty.create({
             name: 'test'
         });
@@ -34,20 +35,35 @@ async function createMainData() {
             facultyId: faculty.id
         });
 
-        await model.Group.create({
+        const group = await model.Group.create({
             name: 'test',
             cathedraId: cathedra.id,
             numberOfSemesters: 2
         });
-    }
 
-    const allLearnForms = await model.LearnForm.count({ where: {} });
-
-    if (allLearnForms == 0) {
-        await model.LearnForm.create({
+        const learnForm = await model.LearnForm.create({
             needPay: false,
             price: 0,
             name: 'test'
+        });
+
+        const user = await model.User.create({
+            firstName: 'test',
+            lastName: 'test',
+            loginName: 'student',
+            roleName: 'student',
+            email: 'student@mail.ru',
+            middleName: 'test',
+            birthday: new Date(),
+            status: 'offline'
+        });
+
+        await user.setPassword('poosib');
+
+        await model.Student.create({
+            userId: user.id,
+            groupId: group.id,
+            learnFormId: learnForm.id
         });
     }
 }

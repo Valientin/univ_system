@@ -1,6 +1,5 @@
 module.exports = (sequelize, DataTypes) => {
     const BalanceHistory = sequelize.define('BalanceHistory', {
-        paymentId: DataTypes.BIGINT,
         change: {
             allowNull: false,
             type: DataTypes.DECIMAL
@@ -22,6 +21,13 @@ module.exports = (sequelize, DataTypes) => {
         BalanceHistory.belongsTo(models.Student, {
             as: 'student', foreignKey: {
                 name: 'studentId',
+                allowNull: false
+            }
+        });
+
+        BalanceHistory.belongsTo(models.Payment, {
+            as: 'payment', foreignKey: {
+                name: 'paymentId',
                 allowNull: false
             }
         });

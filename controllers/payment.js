@@ -1,6 +1,4 @@
 const LiqPay = require('../lib/liqpay');
-const axios = require('axios');
-const querystring = require('querystring');
 
 const config = require('config');
 const publicKey = config.get('LiqPay.publicKey');
@@ -159,6 +157,54 @@ const callback = async(ctx) => {
     ctx.status = 200;
 };
 
+const history = async(ctx, next) => {
+    const { studentId, status } = ctx.query;
+    const where = {};
+
+    if (studentId) {
+        Object.assign(where, { studentId });
+    }
+
+    if (status) {
+        Object.assign(where, { status });
+    }
+
+    const result = await model.Payment.findAndCountAll({
+        where,
+        include: {
+            model: model.Student,
+            as: 'student',
+            include: {
+                model: model.User,
+                as: 'user'
+            }
+        },
+        limit: ctx.limit,
+        offset: ctx.offset
+    });
+
+    ctx.body = {
+        payments: result.rows
+    };
+    ctx.count = result.count;
+
+    await next();
+};
+
+const logs = async(ctx, next) => {
+    const { paymentId } = ctx.params;
+
+    if (!paymentId) {
+        ctx.throw(404);
+    }
+
+    ctx.body = await model.PaymentLog.findAll({
+        where: {
+            paymentId
+        }
+    });
+};
+
 async function cnbJson(params) {
     params = liqpay.cnb_params(params);
     const data = new Buffer.from(JSON.stringify(params)).toString('base64');
@@ -185,5 +231,7 @@ async function cnbLink(params) {
 
 module.exports = {
     rechargeBalance,
-    callback
+    callback,
+    history,
+    logs
 };
