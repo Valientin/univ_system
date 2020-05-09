@@ -5,9 +5,10 @@ const multer = require('@koa/multer');
 const upload = multer();
 
 const { authorise, requireRole } = require('../middleware/authorize');
+const pagination = require('../middleware/pagination');
 const User = require('../controllers/user');
 
-router.get('/user/list', authorise, requireRole(['admin']), User.list);
+router.get('/user/list', authorise, requireRole(['admin']), pagination, User.list);
 router.get('/user/data', authorise, User.getData);
 
 router.post('/user', authorise, requireRole(['admin']), User.create);
