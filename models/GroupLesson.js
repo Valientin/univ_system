@@ -1,9 +1,6 @@
 module.exports = function(sequelize, DataTypes) {
     const GroupLesson = sequelize.define('GroupLesson', {
-        toDate: {
-            type: DataTypes.DATE,
-            allowNull: false
-        }
+        // no need fields
     });
 
     GroupLesson.associate = function(models) {

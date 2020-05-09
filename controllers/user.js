@@ -272,7 +272,7 @@ const update = async(ctx, next) => {
             }
 
             if (oldImage && oldImage.path) {
-                helpers.deleteImage(oldImage.path);
+                helpers.deleteFile(oldImage.path);
             }
 
             await t.commit();
@@ -282,7 +282,7 @@ const update = async(ctx, next) => {
             await t.rollback();
 
             if (newImage) {
-                helpers.deleteImage(newImage.path);
+                helpers.deleteFile(newImage.path);
             }
 
             ctx.status = err.status || 500;

@@ -45,7 +45,7 @@ const all = async(ctx, next) => {
 const create = async(ctx, next) => {
     const { name, needPay, price } = ctx.request.body;
 
-    if (!name || !needPay || !price) {
+    if (!name || isNaN(parseInt(price))) {
         ctx.throw(400);
     }
 

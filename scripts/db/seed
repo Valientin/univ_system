@@ -1,18 +1,17 @@
 #!/usr/bin/env node
 
 const model = require('../../models');
+const faker = require('faker');
 
 async function createAdmins() {
-    const allAdmins = await model.User.count({ where: { roleName: 'admin' } });
-
-    if (allAdmins == 0) {
+    for (let i = 0; i < 22; i++) {
         const user = await model.User.create({
-            firstName: 'test',
-            lastName: 'test',
-            loginName: 'admin',
+            firstName: faker.name.firstName(),
+            lastName: faker.name.lastName(),
+            loginName: i == 0 ? 'admin' : `admin${i}`,
             roleName: 'admin',
-            email: 'test@mail.ru',
-            middleName: 'test',
+            email: `admin${i}@mail.ru`,
+            middleName: faker.name.firstName(),
             birthday: new Date(),
             status: 'offline'
         });
@@ -22,55 +21,80 @@ async function createAdmins() {
 }
 
 async function createMainData() {
-    const allFaculties = await model.Faculty.count({ where: {} });
-    const allLearnForms = await model.LearnForm.count({ where: {} });
+    for (let i = 0; i < 3; i++) {
+        const suffix = i > 0 ? `_${i}` : '';
 
-    if (allFaculties == 0 && allLearnForms == 0) {
         const faculty = await model.Faculty.create({
-            name: 'test'
+            name: faker.company.companyName() + suffix
         });
 
-        const cathedra = await model.Cathedra.create({
-            name: 'test',
-            facultyId: faculty.id
-        });
+        for (let j = 0; j < 3; j++) {
+            const cathedra = await model.Cathedra.create({
+                name: faker.company.companyName() + suffix + `-${j}`,
+                facultyId: faculty.id
+            });
 
-        const group = await model.Group.create({
-            name: 'test',
-            cathedraId: cathedra.id,
-            numberOfSemesters: 2
-        });
+            for (let l = 0; l < 4; l++) {
+                const userT = await model.User.create({
+                    firstName: faker.name.firstName(),
+                    lastName: faker.name.lastName(),
+                    loginName: `teacher${l}${j}${i}`,
+                    roleName: 'teacher',
+                    email: `teacher${l}${j}${i}@mail.ru`,
+                    middleName: faker.name.firstName(),
+                    birthday: new Date(),
+                    status: 'offline'
+                });
 
-        const learnForm = await model.LearnForm.create({
-            needPay: false,
-            price: 0,
-            name: 'test'
-        });
+                await userT.setPassword('poosib');
 
-        const user = await model.User.create({
-            firstName: 'test',
-            lastName: 'test',
-            loginName: 'student',
-            roleName: 'student',
-            email: 'student@mail.ru',
-            middleName: 'test',
-            birthday: new Date(),
-            status: 'offline'
-        });
+                await model.Teacher.create({
+                    userId: userT.id,
+                    cathedraId: cathedra.id
+                });
+            }
 
-        await user.setPassword('poosib');
+            const learnForm = await model.LearnForm.create({
+                needPay: faker.random.boolean(),
+                price: faker.random.number(10000),
+                name: faker.company.companyName() + suffix + `-${j}`
+            });
 
-        await model.Student.create({
-            userId: user.id,
-            groupId: group.id,
-            learnFormId: learnForm.id
-        });
+            for (let k = 0; k < 4; k++) {
+                const group = await model.Group.create({
+                    name: faker.company.companyName() + suffix + `-${j}` + `-${k}`,
+                    cathedraId: cathedra.id,
+                    numberOfSemesters: faker.random.number(10)
+                });
+
+                for (let m = 0; m < 5; m++) {
+                    const user = await model.User.create({
+                        firstName: faker.name.firstName(),
+                        lastName: faker.name.lastName(),
+                        loginName: `student${m}${k}${j}${i}`,
+                        roleName: 'student',
+                        email: `student${m}${k}${j}${i}@mail.ru`,
+                        middleName: faker.name.firstName(),
+                        birthday: new Date(),
+                        status: 'offline'
+                    });
+
+                    await user.setPassword('poosib');
+
+                    await model.Student.create({
+                        userId: user.id,
+                        groupId: group.id,
+                        learnFormId: learnForm.id
+                    });
+                }
+            }
+        }
     }
 }
 
 (async() => {
     await model.sequelize.authenticate();
-    await model.sequelize.sync({ force: false });
+    await model.sequelize.sync({ force: true });
 
     await createAdmins();
     await createMainData();

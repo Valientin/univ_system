@@ -39,6 +39,7 @@ const groupRoutes = require('./routes/group');
 const learnFormRoutes = require('./routes/learnForm');
 const paymentRoutes = require('./routes/payment');
 const balanceHistoryRoutes = require('./routes/balance-history');
+const lessonRoutes = require('./routes/lesson');
 
 app.use(userRoutes);
 app.use(facultyRoutes);
@@ -47,6 +48,7 @@ app.use(groupRoutes);
 app.use(learnFormRoutes);
 app.use(paymentRoutes);
 app.use(balanceHistoryRoutes);
+app.use(lessonRoutes);
 
 if (!module.parent) {
     const model = require('./models');

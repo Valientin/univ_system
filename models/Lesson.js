@@ -3,6 +3,10 @@ module.exports = function(sequelize, DataTypes) {
         name: {
             type: DataTypes.STRING,
             allowNull: false
+        },
+        semester: {
+            type: DataTypes.INTEGER,
+            allowNull: false
         }
     });
 
@@ -12,6 +16,10 @@ module.exports = function(sequelize, DataTypes) {
                 name: 'teacherId',
                 allowNull: false
             }
+        });
+
+        Lesson.hasMany(models.GroupLesson, {
+            as: 'groupLesson', foreignKey: 'lessonId'
         });
     };
 

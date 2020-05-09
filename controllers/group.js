@@ -58,7 +58,7 @@ const list = async(ctx, next) => {
 
 const all = async(ctx, next) => {
     ctx.body = await model.Group.findAll({
-        attributes: ['id', 'name']
+        attributes: ['id', 'name', 'numberOfSemesters']
     });
 
     await next();
