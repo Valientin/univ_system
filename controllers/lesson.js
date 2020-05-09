@@ -14,8 +14,10 @@ const list = async(ctx, next) => {
         });
     }
 
-    if (teacherId) {
+    if (teacherId && !['teacher'].includes(ctx.curUser.roleName)) {
         Object.assign(where, { teacherId });
+    } else if (['teacher'].includes(ctx.curUser.roleName)) {
+        Object.assign(where, { teacherId: ctx.curUser.teacher.id });
     }
 
     if (groupId) {
@@ -33,7 +35,8 @@ const list = async(ctx, next) => {
             include: {
                 model: model.Group,
                 as: 'group',
-                where: groupWhere
+                where: groupWhere,
+                required: !!(groupId)
             }
         },
         limit: ctx.limit,
@@ -44,6 +47,24 @@ const list = async(ctx, next) => {
         lessons: result.rows
     };
     ctx.count = result.count;
+
+    await next();
+};
+
+const getLessonData = async(ctx, next) => {
+    ctx.body = await ctx.lesson.reload({
+        include: [{
+            model: model.LessonMaterial,
+            as: 'lessonMaterials'
+        }, {
+            model: model.GroupLesson,
+            as: 'groupLesson',
+            include: {
+                model: model.Group,
+                as: 'group'
+            }
+        }]
+    });
 
     await next();
 };
@@ -125,7 +146,9 @@ const retrieve = async(ctx, next) => {
 };
 
 const checkTeacher = async(ctx, next) => {
-    if (ctx.curUser.teacher.id != ctx.lesson.teacherId) {
+    const lesson = ctx.lesson || ctx.assessment.lesson;
+
+    if (ctx.curUser.teacher.id != lesson.teacherId) {
         ctx.throw(403);
     }
 
@@ -189,7 +212,7 @@ const addMaterials = async(ctx, next) => {
 
     try {
         await model.LessonMaterial.bulkCreate(ctx.files.map(it => ({
-            photo: it,
+            file: it,
             lessonId: ctx.lesson.id
         })), { transaction: t });
 
@@ -204,14 +227,14 @@ const addMaterials = async(ctx, next) => {
         ctx.throw(409);
     }
 
-    ctx.body = ctx.files;
+    ctx.body = { files: ctx.files };
     ctx.status = 201;
 
     await next();
 };
 
 const removeMaterial = async(ctx, next) => {
-    const path = ctx.material.photo.path;
+    const path = ctx.material.file.path;
 
     await ctx.material.destroy();
     await helpers.deleteFile(path);
@@ -240,6 +263,77 @@ const retrieveMaterial = async(ctx, next) => {
     await next();
 };
 
+const groupStudentsEvaluations = async(ctx, next) => {
+    const existGroupLesson = await model.GroupLesson.count({
+        where: {
+            groupId: ctx.group.id,
+            lessonId: ctx.lesson.id
+        }
+    });
+
+    if (!existGroupLesson) {
+        ctx.throw(409, 'Group does not have this lesson');
+    }
+
+    const allStudents = await model.Student.findAll({
+        where: {
+            groupId: ctx.group.id
+        },
+        include: {
+            attributes: ['firstName', 'lastName', 'middleName', 'email'],
+            model: model.User,
+            as: 'user',
+            required: true
+        }
+    });
+
+    const allAssessments = await model.Assessment.findAll({
+        attributes: ['id'],
+        where: {
+            lessonId: ctx.lesson.id
+        },
+        raw: true,
+        order: [['order', 'DESC']]
+    });
+
+    const allStudentsAssessment = await model.StudentAssessment.findAll({
+        attributes: ['assessmentId', 'studentId', 'evaluation'],
+        raw: true,
+        include: {
+            attributes: [],
+            model: model.Student,
+            as: 'student',
+            required: true,
+            where: {
+                groupId: ctx.group.id
+            }
+        }
+    });
+
+    const result = allStudents.map(({ dataValues: student }) => {
+        const { firstName, lastName, middleName, email } = student.user;
+        const res = {
+            firstName, lastName, middleName, email,
+            studentId: student.id,
+            assessment: Object.assign({},
+                ...allAssessments.map(assessment => {
+                    const studentAssessment = allStudentsAssessment.find(it => {
+                        return it.studentId == student.id && it.assessmentId == assessment.id;
+                    });
+
+                    return {
+                        [assessment.id]: studentAssessment && studentAssessment.evaluation || 0
+                    };
+                })
+            )
+        };
+
+        return res;
+    });
+
+    ctx.body = result;
+};
+
 async function checkExistLesson(ctx, name, teacherId, semester, id) {
     const alreadyExistLesson = await model.Lesson.findOne({
         where: Object.assign({
@@ -264,5 +358,7 @@ module.exports = {
     addMaterials,
     removeMaterial,
     checkTeacher,
-    retrieveMaterial
+    retrieveMaterial,
+    getLessonData,
+    groupStudentsEvaluations
 };

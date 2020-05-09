@@ -456,6 +456,55 @@ const remove = async(ctx, next) => {
     await next();
 };
 
+const teacherAutocomplete = async(ctx, next) => {
+    const where = model.sequelize.or(
+        ...['firstName', 'lastName', 'middleName', 'email', 'loginName'].map(it => ({
+            [it]: {
+                [model.Sequelize.Op.iLike]: `%${ctx.query['query']}%`
+            }
+        }))
+    );
+
+    ctx.body = await model.Teacher.findAll({
+        attributes: ['id', 'userId'],
+        include: {
+            attributes: ['firstName', 'lastName', 'middleName', 'email', 'loginName'],
+            model: model.User,
+            as: 'user',
+            required: true,
+            where
+        },
+        limit: 5
+    });
+};
+
+const retrieveStudent = async(ctx, next) => {
+    const { studentId } = ctx.params;
+
+    if (!studentId) {
+        ctx.throw(404);
+    }
+
+    ctx.student = await model.Student.findOne({
+        where: {
+            id: studentId
+        },
+        include: [{
+            model: model.User,
+            as: 'user'
+        }, {
+            model: model.Group,
+            as: 'group'
+        }]
+    });
+
+    if (!ctx.student) {
+        ctx.throw(404);
+    }
+
+    await next();
+};
+
 module.exports = {
     create,
     login,
@@ -464,5 +513,7 @@ module.exports = {
     retrieve,
     update,
     remove,
-    list
+    list,
+    teacherAutocomplete,
+    retrieveStudent
 };

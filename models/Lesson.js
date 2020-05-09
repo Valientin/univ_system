@@ -21,6 +21,10 @@ module.exports = function(sequelize, DataTypes) {
         Lesson.hasMany(models.GroupLesson, {
             as: 'groupLesson', foreignKey: 'lessonId'
         });
+
+        Lesson.hasMany(models.LessonMaterial, {
+            as: 'lessonMaterials', foreignKey: 'lessonId'
+        });
     };
 
     return Lesson;

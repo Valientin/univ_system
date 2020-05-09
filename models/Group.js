@@ -18,6 +18,10 @@ module.exports = function(sequelize, DataTypes) {
                 allowNull: false
             }
         });
+
+        Group.hasMany(models.Student, {
+            as: 'students', foreignKey: 'groupId'
+        });
     };
 
     return Group;

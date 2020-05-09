@@ -5,6 +5,7 @@ const { authorise, requireRole } = require('../middleware/authorize');
 const pagination = require('../middleware/pagination');
 const helpers = require('../lib/helpers');
 const Lesson = require('../controllers/lesson');
+const Group = require('../controllers/group');
 
 const multer = require('@koa/multer');
 const storage = multer.diskStorage({
@@ -22,7 +23,9 @@ const upload = multer({
     }
 });
 
-router.get('/lesson/list', authorise, requireRole(['admin']), pagination, Lesson.list);
+router.get('/lesson/list', authorise, requireRole(['admin', 'teacher']), pagination, Lesson.list);
+router.get('/lesson/:lessonId/data', authorise, requireRole(['teacher']), Lesson.retrieve, Lesson.checkTeacher, Lesson.getLessonData);
+router.get('/lesson/:lessonId/:groupId/evaluations', authorise, requireRole(['teacher']), Lesson.retrieve, Lesson.checkTeacher, Group.retrieve, Lesson.groupStudentsEvaluations);
 
 router.post('/lesson', authorise, requireRole(['admin']), Lesson.create);
 router.post('/lesson/:lessonId/set-groups', authorise, requireRole(['admin']), Lesson.retrieve, Lesson.setGroups);

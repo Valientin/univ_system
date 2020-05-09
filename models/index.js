@@ -17,7 +17,7 @@ function connect(conf) {
     } else {
         return new Sequelize(conf.database, conf.username, conf.password, {
             dialect: 'postgres',
-            logging: true,
+            logging: false,
             host: conf.host,
             port: process.env.POSTGRESQL_PORT || conf.port || 5432
         });

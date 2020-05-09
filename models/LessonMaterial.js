@@ -1,6 +1,6 @@
 module.exports = function(sequelize, DataTypes) {
     const LessonMaterial = sequelize.define('LessonMaterial', {
-        photo: {
+        file: {
             type: DataTypes.JSONB,
             allowNull: false
         }
