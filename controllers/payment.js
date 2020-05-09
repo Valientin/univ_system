@@ -251,11 +251,17 @@ const logs = async(ctx, next) => {
         ctx.throw(404);
     }
 
-    ctx.body = await model.PaymentLog.findAll({
+    const logs = await model.PaymentLog.findAll({
         where: {
             paymentId
         }
     });
+
+    ctx.body = {
+        logs
+    };
+
+    await next();
 };
 
 async function cnbJson(params) {

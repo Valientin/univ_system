@@ -478,6 +478,28 @@ const teacherAutocomplete = async(ctx, next) => {
     });
 };
 
+const studentAutocomplete = async(ctx, next) => {
+    const where = model.sequelize.or(
+        ...['firstName', 'lastName', 'middleName', 'email', 'loginName'].map(it => ({
+            [it]: {
+                [model.Sequelize.Op.iLike]: `%${ctx.query['query']}%`
+            }
+        }))
+    );
+
+    ctx.body = await model.Student.findAll({
+        attributes: ['id', 'userId'],
+        include: {
+            attributes: ['firstName', 'lastName', 'middleName', 'email', 'loginName'],
+            model: model.User,
+            as: 'user',
+            required: true,
+            where
+        },
+        limit: 5
+    });
+};
+
 const retrieveStudent = async(ctx, next) => {
     const { studentId } = ctx.params;
 
@@ -515,5 +537,6 @@ module.exports = {
     remove,
     list,
     teacherAutocomplete,
-    retrieveStudent
+    retrieveStudent,
+    studentAutocomplete
 };
