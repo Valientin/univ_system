@@ -1,6 +1,7 @@
 const model = require('../models');
 const logger = require('../lib/logger');
 const helpers = require('../lib/helpers');
+const serializer = require('../serializers/user').main;
 
 const list = async(ctx, next) => {
     const { roleName, groupId, learnFormId, cathedraId, facultyId } = ctx.query;
@@ -107,7 +108,7 @@ const list = async(ctx, next) => {
     });
 
     ctx.body = {
-        users: result.rows
+        users: result.rows.map(it => serializer(it))
     };
     ctx.count = result.count;
 
