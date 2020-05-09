@@ -4,7 +4,7 @@ const model = require('../../models');
 const faker = require('faker');
 
 async function createAdmins() {
-    for (let i = 0; i < 22; i++) {
+    for (let i = 0; i < 1; i++) {
         const user = await model.User.create({
             firstName: faker.name.firstName(),
             lastName: faker.name.lastName(),
@@ -21,20 +21,20 @@ async function createAdmins() {
 }
 
 async function createMainData() {
-    for (let i = 0; i < 3; i++) {
+    for (let i = 0; i < 1; i++) {
         const suffix = i > 0 ? `_${i}` : '';
 
         const faculty = await model.Faculty.create({
             name: faker.company.companyName() + suffix
         });
 
-        for (let j = 0; j < 3; j++) {
+        for (let j = 0; j < 1; j++) {
             const cathedra = await model.Cathedra.create({
                 name: faker.company.companyName() + suffix + `-${j}`,
                 facultyId: faculty.id
             });
 
-            for (let l = 0; l < 4; l++) {
+            for (let l = 0; l < 1; l++) {
                 const userT = await model.User.create({
                     firstName: faker.name.firstName(),
                     lastName: faker.name.lastName(),
@@ -60,14 +60,14 @@ async function createMainData() {
                 name: faker.company.companyName() + suffix + `-${j}`
             });
 
-            for (let k = 0; k < 4; k++) {
+            for (let k = 0; k < 1; k++) {
                 const group = await model.Group.create({
                     name: faker.company.companyName() + suffix + `-${j}` + `-${k}`,
                     cathedraId: cathedra.id,
                     numberOfSemesters: faker.random.number(10)
                 });
 
-                for (let m = 0; m < 5; m++) {
+                for (let m = 0; m < 1; m++) {
                     const user = await model.User.create({
                         firstName: faker.name.firstName(),
                         lastName: faker.name.lastName(),
