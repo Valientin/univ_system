@@ -14,31 +14,45 @@ const list = async(ctx, next) => {
         });
     }
 
-    if (teacherId && !['teacher'].includes(ctx.curUser.roleName)) {
+    if (teacherId && !['teacher', 'student'].includes(ctx.curUser.roleName)) {
         Object.assign(where, { teacherId });
     } else if (['teacher'].includes(ctx.curUser.roleName)) {
         Object.assign(where, { teacherId: ctx.curUser.teacher.id });
     }
 
-    if (groupId) {
+    if (groupId && !['student'].includes(ctx.curUser.roleName)) {
         Object.assign(groupWhere, { id: groupId });
+    } else if (['student'].includes(ctx.curUser.roleName)) {
+        Object.assign(groupWhere, { id: ctx.curUser.student.groupId });
     }
+
+    const required = !!groupId || ['student'].includes(ctx.curUser.roleName);
 
     const result = await model.Lesson.findAndCountAll({
         attributes: [
-            'id', 'name', 'createdAt', 'updatedAt'
+            'id', 'name', 'createdAt', 'updatedAt', 'teacherId'
         ],
         where,
-        include: {
+        include: [{
             model: model.GroupLesson,
             as: 'groupLesson',
+            attributes: ['id'],
             include: {
                 model: model.Group,
                 as: 'group',
                 where: groupWhere,
-                required: !!(groupId)
+                required
             }
-        },
+        }, {
+            model: model.Teacher,
+            as: 'teacher',
+            attributes: ['id'],
+            include: {
+                attributes: ['firstName', 'lastName', 'middleName', 'email'],
+                model: model.User,
+                as: 'user'
+            }
+        }],
         limit: ctx.limit,
         offset: ctx.offset
     });
@@ -52,18 +66,35 @@ const list = async(ctx, next) => {
 };
 
 const getLessonData = async(ctx, next) => {
-    ctx.body = await ctx.lesson.reload({
-        include: [{
-            model: model.LessonMaterial,
-            as: 'lessonMaterials'
-        }, {
+    const include = [{
+        model: model.LessonMaterial,
+        as: 'lessonMaterials'
+    }];
+
+    if (!['student'].includes(ctx.curUser.roleName)) {
+        include.push({
             model: model.GroupLesson,
             as: 'groupLesson',
             include: {
                 model: model.Group,
                 as: 'group'
             }
-        }]
+        });
+    } else if (['student'].includes(ctx.curUser.roleName)) {
+        include.push({
+            model: model.Teacher,
+            as: 'teacher',
+            attributes: ['id'],
+            include: {
+                attributes: ['firstName', 'lastName', 'middleName', 'email'],
+                model: model.User,
+                as: 'user'
+            }
+        });
+    }
+
+    ctx.body = await ctx.lesson.reload({
+        include
     });
 
     await next();
@@ -146,10 +177,29 @@ const retrieve = async(ctx, next) => {
 };
 
 const checkTeacher = async(ctx, next) => {
-    const lesson = ctx.lesson || ctx.assessment.lesson;
+    if (ctx.curUser.roleName == 'teacher') {
+        const lesson = ctx.lesson || ctx.assessment.lesson;
 
-    if (ctx.curUser.teacher.id != lesson.teacherId) {
-        ctx.throw(403);
+        if (ctx.curUser.teacher.id != lesson.teacherId) {
+            ctx.throw(403);
+        }
+    }
+
+    await next();
+};
+
+const checkStudent = async(ctx, next) => {
+    if (ctx.curUser.roleName == 'student') {
+        const existGroupLesson = await model.GroupLesson.count({
+            where: {
+                groupId: ctx.curUser.student.groupId,
+                lessonId: ctx.lesson.id
+            }
+        });
+
+        if (!existGroupLesson) {
+            ctx.throw(409, 'Group does not have this lesson');
+        }
     }
 
     await next();
@@ -293,7 +343,7 @@ const groupStudentsEvaluations = async(ctx, next) => {
             lessonId: ctx.lesson.id
         },
         raw: true,
-        order: [['order', 'DESC']]
+        order: [['order', 'ASC']]
     });
 
     const allStudentsAssessment = await model.StudentAssessment.findAll({
@@ -334,6 +384,36 @@ const groupStudentsEvaluations = async(ctx, next) => {
     ctx.body = result;
 };
 
+const studentEvaluations = async(ctx, next) => {
+    const allAssessments = await model.Assessment.findAll({
+        attributes: ['order', 'name', 'description', 'max'],
+        where: {
+            lessonId: ctx.lesson.id
+        },
+        raw: true,
+        order: [['order', 'ASC']]
+    });
+
+    const allStudentAssessment = await model.StudentAssessment.findAll({
+        attributes: ['assessmentId', 'evaluation'],
+        raw: true,
+        where: {
+            studentId: ctx.curUser.student.id
+        }
+    });
+
+    const result = allAssessments.map(assessment => {
+        const studentAssessment = allStudentAssessment.find(it => it.assessmentId == assessment.id);
+
+        return {
+            ...assessment,
+            evaluation: studentAssessment && studentAssessment.evaluation || 0
+        };
+    });
+
+    ctx.body = result;
+};
+
 async function checkExistLesson(ctx, name, teacherId, semester, id) {
     const alreadyExistLesson = await model.Lesson.findOne({
         where: Object.assign({
@@ -360,5 +440,7 @@ module.exports = {
     checkTeacher,
     retrieveMaterial,
     getLessonData,
-    groupStudentsEvaluations
+    groupStudentsEvaluations,
+    checkStudent,
+    studentEvaluations
 };
