@@ -11,6 +11,7 @@ const User = require('../controllers/user');
 router.get('/user/list', authorise, requireRole(['admin']), pagination, User.list);
 router.get('/user/data', authorise, User.getData);
 router.get('/user/teacher/autocomplete', authorise, User.teacherAutocomplete);
+router.get('/user/student/autocomplete', authorise, User.studentAutocomplete);
 
 router.post('/user', authorise, requireRole(['admin']), User.create);
 router.post('/user/session', User.login);
