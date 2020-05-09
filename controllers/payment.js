@@ -219,7 +219,7 @@ const history = async(ctx, next) => {
     }
 
     if (type) {
-        Object.assign(where, { status });
+        Object.assign(where, { type });
     }
 
     const result = await model.Payment.findAndCountAll({
