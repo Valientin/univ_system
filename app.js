@@ -41,6 +41,9 @@ const paymentRoutes = require('./routes/payment');
 const balanceHistoryRoutes = require('./routes/balance-history');
 const lessonRoutes = require('./routes/lesson');
 const assessmentRoutes = require('./routes/assessment');
+const testRoutes = require('./routes/test');
+const testQuestionRoutes = require('./routes/test-question');
+const testQuestionOptionRoutes = require('./routes/test-question-option');
 
 app.use(userRoutes);
 app.use(facultyRoutes);
@@ -51,6 +54,9 @@ app.use(paymentRoutes);
 app.use(balanceHistoryRoutes);
 app.use(lessonRoutes);
 app.use(assessmentRoutes);
+app.use(testRoutes);
+app.use(testQuestionRoutes);
+app.use(testQuestionOptionRoutes);
 
 if (!module.parent) {
     const model = require('./models');

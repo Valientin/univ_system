@@ -92,12 +92,54 @@ async function createMainData() {
     }
 }
 
+async function createTestsData() {
+    const teacher = await model.Teacher.findOne({
+        where: {
+            id: 1
+        }
+    });
+
+    if (teacher) {
+        const lesson = await model.Lesson.create({
+            name: 'test',
+            teacherId: teacher.id,
+            semester: 1
+        });
+
+        const test = await model.Test.create({
+            name: 'test',
+            description: 'desc',
+            maxAttempts: 5,
+            questions: 3,
+            active: false,
+            lessonId: lesson.id
+        });
+
+        for (let i = 0; i < 5; i++) {
+            const testQuestion = await model.TestQuestion.create({
+                question: `question - ${i}`,
+                type: 'single',
+                testId: test.id
+            });
+
+            for (let j = 0; j < 3; j++) {
+                const testQuestionOption = await model.TestQuestionOption.create({
+                    text: `question - ${i}, answer - ${j}`,
+                    correctAnswer: j == 0,
+                    testQuestionId: testQuestion.id
+                });
+            }
+        }
+    }
+};
+
 (async() => {
     await model.sequelize.authenticate();
     await model.sequelize.sync({ force: true });
 
     await createAdmins();
     await createMainData();
+    await createTestsData();
 
     process.exit(0);
 })(function(e) {

@@ -79,6 +79,9 @@ const getLessonData = async(ctx, next) => {
                 model: model.Group,
                 as: 'group'
             }
+        }, {
+            model: model.Test,
+            as: 'tests'
         });
     } else if (['student'].includes(ctx.curUser.roleName)) {
         include.push({
@@ -86,9 +89,16 @@ const getLessonData = async(ctx, next) => {
             as: 'teacher',
             attributes: ['id'],
             include: {
-                attributes: ['firstName', 'lastName', 'middleName', 'email'],
+                attributes: ['firstName', 'lastName', 'middleName', 'email', 'photo'],
                 model: model.User,
                 as: 'user'
+            }
+        }, {
+            model: model.Test,
+            as: 'tests',
+            attributes: ['name', 'description', 'maxAttempts'],
+            where: {
+                active: true
             }
         });
     }
@@ -178,7 +188,8 @@ const retrieve = async(ctx, next) => {
 
 const checkTeacher = async(ctx, next) => {
     if (ctx.curUser.roleName == 'teacher') {
-        const lesson = ctx.lesson || ctx.assessment.lesson;
+        const lesson = ctx.lesson || ctx.assessment && ctx.assessment.lesson ||
+            ctx.test && ctx.test.lesson;
 
         if (ctx.curUser.teacher.id != lesson.teacherId) {
             ctx.throw(403);
@@ -190,10 +201,12 @@ const checkTeacher = async(ctx, next) => {
 
 const checkStudent = async(ctx, next) => {
     if (ctx.curUser.roleName == 'student') {
+        const lesson = ctx.lesson || ctx.test && ctx.test.lesson;
+
         const existGroupLesson = await model.GroupLesson.count({
             where: {
                 groupId: ctx.curUser.student.groupId,
-                lessonId: ctx.lesson.id
+                lessonId: lesson.id
             }
         });
 
