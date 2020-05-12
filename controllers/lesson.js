@@ -150,14 +150,23 @@ const create = async(ctx, next) => {
     ctx.status = 201;
 
     ctx.body = await lesson.reload({
-        include: {
+        include: [{
             model: model.GroupLesson,
             as: 'groupLesson',
             include: {
                 model: model.Group,
                 as: 'group'
             }
-        }
+        }, {
+            model: model.Teacher,
+            as: 'teacher',
+            attributes: ['id'],
+            include: {
+                attributes: ['firstName', 'lastName', 'middleName', 'email'],
+                model: model.User,
+                as: 'user'
+            }
+        }]
     });
 
     await next();
@@ -201,10 +210,28 @@ const update = async(ctx, next) => {
 
     await model.GroupLesson.bulkCreate(groups.map(it => ({
         groupId: it.id,
-        lessonId: lesson.id
+        lessonId: ctx.lesson.id
     })));
 
-    ctx.body = ctx.lesson;
+    ctx.body = await ctx.lesson.reload({
+        include: [{
+            model: model.GroupLesson,
+            as: 'groupLesson',
+            include: {
+                model: model.Group,
+                as: 'group'
+            }
+        }, {
+            model: model.Teacher,
+            as: 'teacher',
+            attributes: ['id'],
+            include: {
+                attributes: ['firstName', 'lastName', 'middleName', 'email'],
+                model: model.User,
+                as: 'user'
+            }
+        }]
+    });
 };
 
 const remove = async(ctx, next) => {
