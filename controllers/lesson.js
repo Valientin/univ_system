@@ -235,15 +235,11 @@ const update = async(ctx, next) => {
 };
 
 const remove = async(ctx, next) => {
-    const groupLessonCount = await model.GroupLesson.count({
+    await model.GroupLesson.destroy({
         where: {
             lessonId: ctx.lesson.id
         }
     });
-
-    if (groupLessonCount > 0) {
-        ctx.throw(409, 'lessonAlreayUsed');
-    }
 
     await ctx.lesson.destroy();
 
