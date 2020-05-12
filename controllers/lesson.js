@@ -111,39 +111,96 @@ const getLessonData = async(ctx, next) => {
 };
 
 const create = async(ctx, next) => {
-    const { name, teacherId, semester } = ctx.request.body;
+    const { name, teacherId, semester, groupsIds } = ctx.request.body;
 
-    if (!name || !semester || isNaN(parseInt(semester))) {
+    if (!name || !semester || isNaN(parseInt(semester)) || !groupsIds || !Array.isArray(groupsIds)) {
         ctx.throw(400);
     }
 
     await checkExistLesson(ctx, name, teacherId, semester);
 
-    ctx.body = await model.Lesson.create({
+    const groups = await model.Group.findAll({
+        attributes: ['id', 'numberOfSemesters'],
+        where: {
+            id: {
+                [model.Sequelize.Op.in]: groupsIds
+            }
+        },
+        group: ['"Group.id"'],
+        having: model.Sequelize.literal(`"numberOfSemesters" <= ${ctx.lesson.semester}`)
+    });
+
+    if (!groups.length) {
+        ctx.throw(404, 'notFoundGroups');
+    }
+
+    const lesson = await model.Lesson.create({
         name,
         teacherId,
         semester: parseInt(semester)
     });
 
+    await model.GroupLesson.bulkCreate(groups.map(it => ({
+        groupId: it.id,
+        lessonId: lesson.id
+    })));
+
     ctx.status = 201;
+
+    ctx.body = await lesson.reload({
+        include: {
+            model: model.GroupLesson,
+            as: 'groupLesson',
+            include: {
+                model: model.Group,
+                as: 'group'
+            }
+        }
+    });
 
     await next();
 };
 
 const update = async(ctx, next) => {
-    const { name, teacherId, semester } = ctx.request.body;
+    const { name, teacherId, semester, groupsIds } = ctx.request.body;
 
-    if (!name || !teacherId || isNaN(parseInt(semester))) {
+    if (!name || !semester || isNaN(parseInt(semester)) || !groupsIds || !Array.isArray(groupsIds)) {
         ctx.throw(400);
     }
 
     await checkExistLesson(ctx, name, teacherId, semester, ctx.lesson.id);
+
+    const groups = await model.Group.findAll({
+        attributes: ['id', 'numberOfSemesters'],
+        where: {
+            id: {
+                [model.Sequelize.Op.in]: groupsIds
+            }
+        },
+        group: ['"Group.id"'],
+        having: model.Sequelize.literal(`"numberOfSemesters" <= ${ctx.lesson.semester}`)
+    });
+
+    if (!groups.length) {
+        ctx.throw(404, 'notFoundGroups');
+    }
 
     await ctx.lesson.update({
         name,
         teacherId,
         semester: parseInt(semester)
     });
+
+    await model.GroupLesson.destroy({
+        where: {
+            lessonId: ctx.lesson.id
+        }
+    });
+
+    await model.GroupLesson.bulkCreate(groups.map(it => ({
+        groupId: it.id,
+        lessonId: lesson.id
+    })));
 
     ctx.body = ctx.lesson;
 };
