@@ -68,7 +68,8 @@ const list = async(ctx, next) => {
 const getLessonData = async(ctx, next) => {
     const include = [{
         model: model.LessonMaterial,
-        as: 'lessonMaterials'
+        as: 'lessonMaterials',
+        required: false
     }];
 
     if (!['student'].includes(ctx.curUser.roleName)) {
@@ -96,6 +97,7 @@ const getLessonData = async(ctx, next) => {
         }, {
             model: model.Test,
             as: 'tests',
+            required: false,
             attributes: ['name', 'description', 'maxAttempts'],
             where: {
                 active: true
