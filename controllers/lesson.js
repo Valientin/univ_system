@@ -107,6 +107,12 @@ const getLessonData = async(ctx, next) => {
         include
     });
 
+    if (!['student'].includes(ctx.curUser.roleName)) {
+        const groupsIds = ctx.body.groupLesson.map('groupId');
+
+        ctx.body.setDataValue('groupsIds', groupsIds);
+    }
+
     await next();
 };
 
