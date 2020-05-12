@@ -119,6 +119,12 @@ const create = async(ctx, next) => {
 
     await checkExistLesson(ctx, name, teacherId, semester);
 
+    const lesson = await model.Lesson.create({
+        name,
+        teacherId,
+        semester: parseInt(semester)
+    });
+
     const groups = await model.Group.findAll({
         attributes: ['id', 'numberOfSemesters'],
         where: {
@@ -127,17 +133,7 @@ const create = async(ctx, next) => {
             }
         },
         group: ['"Group.id"'],
-        having: model.Sequelize.literal(`"numberOfSemesters" <= ${ctx.lesson.semester}`)
-    });
-
-    if (!groups.length) {
-        ctx.throw(404, 'notFoundGroups');
-    }
-
-    const lesson = await model.Lesson.create({
-        name,
-        teacherId,
-        semester: parseInt(semester)
+        having: model.Sequelize.literal(`"numberOfSemesters" <= ${lesson.semester}`)
     });
 
     await model.GroupLesson.bulkCreate(groups.map(it => ({
