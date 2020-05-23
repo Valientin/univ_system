@@ -24,6 +24,7 @@ const upload = multer({
 });
 
 router.get('/lesson/list', authorise, requireRole(['admin', 'teacher', 'student']), pagination, Lesson.list);
+router.get('/lesson/all', authorise, requireRole(['teacher']), Lesson.all);
 router.get('/lesson/:lessonId/data', authorise, requireRole(['teacher', 'student']), Lesson.retrieve, Lesson.checkTeacher, Lesson.checkStudent, Lesson.getLessonData);
 router.get('/lesson/:lessonId/:groupId/evaluations', authorise, requireRole(['teacher']), Lesson.retrieve, Lesson.checkTeacher, Group.retrieve, Lesson.groupStudentsEvaluations);
 router.get('/lesson/:lessonId/evaluations', authorise, requireRole(['student']), Lesson.retrieve, Lesson.checkStudent, Lesson.studentEvaluations);

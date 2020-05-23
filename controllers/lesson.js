@@ -65,6 +65,15 @@ const list = async(ctx, next) => {
     await next();
 };
 
+const all = async(ctx, next) => {
+    ctx.body = await model.Lesson.findAll({
+        attributes: ['id', 'name'],
+        where: {
+            teacher: ctx.curUser.teacher.id
+        }
+    });
+};
+
 const getLessonData = async(ctx, next) => {
     const include = [{
         model: model.LessonMaterial,
@@ -539,5 +548,6 @@ module.exports = {
     getLessonData,
     groupStudentsEvaluations,
     checkStudent,
-    studentEvaluations
+    studentEvaluations,
+    all
 };
