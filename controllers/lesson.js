@@ -69,7 +69,7 @@ const all = async(ctx, next) => {
     ctx.body = await model.Lesson.findAll({
         attributes: ['id', 'name'],
         where: {
-            teacher: ctx.curUser.teacher.id
+            teacherId: ctx.curUser.teacher.id
         }
     });
 };
