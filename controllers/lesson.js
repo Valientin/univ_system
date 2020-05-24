@@ -492,7 +492,7 @@ const groupStudentsEvaluations = async(ctx, next) => {
 
 const studentEvaluations = async(ctx, next) => {
     const allAssessments = await model.Assessment.findAll({
-        attributes: ['order', 'name', 'description', 'max'],
+        attributes: ['id', 'order', 'name', 'description', 'max'],
         where: {
             lessonId: ctx.lesson.id
         },
