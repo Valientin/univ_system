@@ -18,4 +18,8 @@ router.put('/test/:testId/change-active', authorise, requireRole(['teacher']), T
 
 router.delete('/test/:testId', authorise, requireRole(['teacher']), Test.retrieve, Lesson.checkTeacher, Test.checkActiveTest, Test.remove);
 
+router.post('callback/liqpay', (ctx, next) => {
+    logger.log('info', ctx.body);
+})
+
 module.exports = router.routes();
